@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# bin/detect <build-dir>
+
+# This buildpack is valid for any app
+echo "FFmpeg Optimized"
+exit 0

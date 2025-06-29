@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+set -e
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+VENDOR_DIR="$BUILD_DIR/vendor"
+FFMPEG_DIR="$VENDOR_DIR/ffmpeg"
+PROFILE_DIR="$BUILD_DIR/.profile.d"
+
+# FFmpeg binary URL - you would host this on GitHub releases or a CDN
+FFMPEG_URL="https://github.com/FallSoftCo/ffmpeg-optimized/releases/download/v1.0.0/ffmpeg-minimal"
+FFMPEG_VERSION="1.0.0-optimized"
+
+indent() {
+  sed -u 's/^/       /'
+}
+
+echo "-----> Installing FFmpeg Optimized v${FFMPEG_VERSION}"
+
+# Check cache first
+CACHED_FFMPEG="$CACHE_DIR/ffmpeg-$FFMPEG_VERSION"
+if [ -f "$CACHED_FFMPEG" ]; then
+  echo "       Using cached FFmpeg binary" | indent
+  mkdir -p "$FFMPEG_DIR"
+  cp "$CACHED_FFMPEG" "$FFMPEG_DIR/ffmpeg"
+else
+  echo "       Downloading FFmpeg binary" | indent
+  mkdir -p "$FFMPEG_DIR"
+  
+  # Download with curl (more reliable than wget on Heroku/Gigalixir)
+  if command -v curl >/dev/null 2>&1; then
+    curl -L --silent --retry 3 --retry-delay 1 -o "$FFMPEG_DIR/ffmpeg" "$FFMPEG_URL" || {
+      echo "       ERROR: Failed to download FFmpeg" | indent
+      exit 1
+    }
+  else
+    wget -q -O "$FFMPEG_DIR/ffmpeg" "$FFMPEG_URL" || {
+      echo "       ERROR: Failed to download FFmpeg" | indent
+      exit 1
+    }
+  fi
+  
+  # Cache for next build
+  cp "$FFMPEG_DIR/ffmpeg" "$CACHED_FFMPEG"
+fi
+
+# Make executable
+chmod +x "$FFMPEG_DIR/ffmpeg"
+
+# Verify the binary works
+if ! "$FFMPEG_DIR/ffmpeg" -version >/dev/null 2>&1; then
+  echo "       ERROR: FFmpeg binary verification failed" | indent
+  exit 1
+fi
+
+echo "       FFmpeg binary installed successfully" | indent
+
+# Get version info
+FFMPEG_VERSION_OUTPUT=$("$FFMPEG_DIR/ffmpeg" -version 2>&1 | head -n1)
+echo "       $FFMPEG_VERSION_OUTPUT" | indent
+
+# Create profile.d script
+echo "-----> Creating runtime profile"
+mkdir -p "$PROFILE_DIR"
+
+cat > "$PROFILE_DIR/ffmpeg.sh" <<'PROFILE'
+# Add FFmpeg to PATH
+export PATH="$PATH:/app/vendor/ffmpeg"
+
+# Enable frame extraction optimizations
+export FFMPEG_MINIMAL_FRAME_EXTRACTION=1
+
+# Optional: Set memory limits for FFmpeg processes
+export FFMPEG_DATADIR="/app/vendor/ffmpeg"
+PROFILE
+
+echo "       Runtime profile created" | indent
+
+# Create a simple test script
+cat > "$FFMPEG_DIR/test-ffmpeg.sh" <<'TEST'
+#!/bin/bash
+echo "Testing FFmpeg installation..."
+ffmpeg -version
+TEST
+chmod +x "$FFMPEG_DIR/test-ffmpeg.sh"
+
+echo "-----> FFmpeg Optimized installation complete!"
+echo "       Binary location: /app/vendor/ffmpeg/ffmpeg" | indent
+echo "       Environment: FFMPEG_MINIMAL_FRAME_EXTRACTION=1" | indent

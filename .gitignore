@@ -45,3 +45,8 @@
 /libavcodec/vulkan/*.c
 /libavfilter/vulkan/*.c
 /.*/
+
+# Custom build outputs
+/build/
+/benchmark_test/test_video.mp4
+/benchmark_test/*.mp4

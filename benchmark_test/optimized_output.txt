@@ -1,0 +1,35 @@
+ffmpeg version git-2025-06-28-cfd1f81 Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 13 (Ubuntu 13.3.0-6ubuntu2~24.04)
+  configuration: --prefix=/home/ai/ffmpeg-optimized/build --enable-small --disable-debug --disable-doc --disable-avdevice --disable-swresample --enable-network --disable-encoders --enable-encoder=mjpeg --enable-encoder=png --disable-decoders --enable-decoder=h264 --enable-decoder=hevc --enable-decoder=vp8 --enable-decoder=vp9 --enable-decoder=av1 --enable-decoder=mpeg4 --enable-decoder=mjpeg --disable-muxers --enable-muxer=image2 --enable-muxer=mjpeg --enable-muxer=singlejpeg --disable-demuxers --enable-demuxer=mov --enable-demuxer=matroska --enable-demuxer=flv --enable-demuxer=mpegts --enable-demuxer=concat --disable-devices --extra-cflags='-Os -ffunction-sections -fdata-sections -DMINIMAL_FFMPEG' --extra-ldflags='-Wl,--gc-sections -Wl,--strip-all'
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  4.100 / 62.  4.100
+  libavformat    62.  1.101 / 62.  1.101
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+[in#0 @ 0x55b1f1c11580] Error opening input: No such file or directory
+Error opening input file .
+Error opening input files: No such file or directory
+Command exited with non-zero status 254
+	Command being timed: "../build/bin/ffmpeg -i  -frames:v 10 -q:v 2 optimized_frames/frame_%03d.jpg -y"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5068
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 313
+	Voluntary context switches: 0
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 254

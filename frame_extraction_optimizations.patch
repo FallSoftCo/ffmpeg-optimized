@@ -1,0 +1,31 @@
+diff --git a/libavformat/options_table.h b/libavformat/options_table.h
+index abc123..def456 100644
+--- a/libavformat/options_table.h
++++ b/libavformat/options_table.h
+@@ -73,7 +73,7 @@ static const AVOption avformat_options[] = {
+ {"fastseek", "enable fast, but inaccurate seeks for some formats", OFFSET(fast_seek), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, D},
+-{"probesize", "set probing size", OFFSET(probesize), AV_OPT_TYPE_INT64, {.i64 = 5000000 }, 32, INT64_MAX, D},
++{"probesize", "set probing size", OFFSET(probesize), AV_OPT_TYPE_INT64, {.i64 = 1048576 }, 32, INT64_MAX, D}, // Reduced from 5MB to 1MB for frame extraction
+ {"max_analyze_duration", "Maximum duration (in AV_TIME_BASE units) of the data to analyze", OFFSET(max_analyze_duration), AV_OPT_TYPE_INT64, {.i64 = 0 }, 0, INT64_MAX, D},
+-{"rtbufsize", "max memory used for buffering real-time frames", OFFSET(max_picture_buffer), AV_OPT_TYPE_INT, { .i64 = 3041280 }, 0, INT_MAX, D }, /* defaults to 1s of 15fps 352x288 YUYV422 video */
++{"rtbufsize", "max memory used for buffering real-time frames", OFFSET(max_picture_buffer), AV_OPT_TYPE_INT, { .i64 = 524288 }, 0, INT_MAX, D }, /* Reduced from ~3MB to 512KB for frame extraction */
+
+diff --git a/fftools/ffmpeg_opt.c b/fftools/ffmpeg_opt.c
+index abc123..def456 100644
+--- a/fftools/ffmpeg_opt.c
++++ b/fftools/ffmpeg_opt.c
+@@ -1234,6 +1234,15 @@ static int open_input_file(OptionsContext *o, const char *filename)
+     if (!ic)
+         exit_program(1);
+ 
++    // Optimization for frame extraction: reduce probe size and analysis duration
++    if (getenv("FFMPEG_MINIMAL_FRAME_EXTRACTION")) {
++        ic->probesize = 262144;  // 256KB probe size
++        ic->max_analyze_duration = 1000000;  // 1 second max analysis
++        // Enable nobuffer flag to reduce memory usage
++        ic->flags |= AVFMT_FLAG_NOBUFFER;
++        av_log(NULL, AV_LOG_INFO, "Frame extraction optimizations enabled\n");
++    }
++
+     if (o->bitexact)
+         ic->flags |= AVFMT_FLAG_BITEXACT;
